@@ -1,0 +1,68 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: free5gc-amf-deployment
+spec:
+  selector:
+    matchLabels:
+      app: free5gc-amf
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: free5gc-amf
+      annotations:
+        cni.projectcalico.org/ipAddrs: "[\"10.20.0.110\"]"        
+    spec:
+      containers:      
+      - name: myapp-container
+        image: mjkota/free5gc-compose_free5gc-amf
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 29518
+        - containerPort: 38412
+        command: ["/bin/sh"]
+        args: ["-c", "./amf -amfcfg ../config/amfcfg.conf"]
+        env:
+          - name: GIN_MODE
+            value: "release"
+        volumeMounts:
+        - name: amfcfg
+          mountPath: /free5gc/config/amfcfg.conf
+          subPath: amfcfg.conf
+        - name: free5gc
+          mountPath: /free5gc/config/free5GC.conf
+          subPath: free5GC.conf
+      volumes:
+      - name: amfcfg
+        configMap:
+          name: free5gc-configmap
+          items: 
+          - key: amfcfg.conf
+            path: amfcfg.conf
+      - name: free5gc
+        configMap:
+          name: free5gc-configmap
+          items: 
+          - key: free5GC.conf
+            path: free5GC.conf
+ 
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: free5gc-amf-service
+spec:
+  selector:
+    app: free5gc-amf
+  type: NodePort
+  ports:
+  - protocol: TCP
+    targetPort: 29518
+    name: amf
+    port: 29518
+  - protocol: SCTP
+    name: test
+    targetPort: 38412
+    nodePort: 30320 
+    port: 38412

@@ -1,0 +1,122 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: free5gc-smf-deployment
+spec:
+  selector:
+    matchLabels:
+      app: free5gc-smf
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: free5gc-smf
+        annotations:
+         cni.projectcalico.org/ipAddrs: "[\"10.20.0.115\"]"
+    spec:
+      containers:      
+      - name: myapp-container
+        image: mjkota/free5gc-compose_free5gc-smf
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: GIN_MODE
+            value: "release"
+        ports:
+        - containerPort: 29502
+        - containerPort: 8805
+        command: ["/bin/sh"]
+        args: ["-c", "./smf -smfcfg ../config/smfcfg.conf -uerouting ../config/uerouting.yaml"]
+        volumeMounts:
+        - name: smfcfg
+          mountPath: /free5gc/config/smfcfg.conf
+          subPath: smfcfg.conf
+        - name: free5gc
+          mountPath: /free5gc/config/free5GC.conf
+          subPath: free5GC.conf
+        - name: uerouting
+          mountPath: /free5gc/config/uerouting.yaml
+          subPath: uerouting.yaml
+
+      volumes:
+      - name: smfcfg
+        configMap:
+          name: free5gc-configmap
+          items: 
+          - key: smfcfg.conf
+            path: smfcfg.conf
+      - name: free5gc
+        configMap:
+          name: free5gc-configmap
+          items: 
+          - key: free5GC.conf
+            path: free5GC.conf
+      - name: uerouting
+        configMap:
+          name: uerouting
+          items:
+          - key: uerouting.yaml
+            path: uerouting.yaml
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: free5gc-smf-service
+spec:
+  selector:
+    app: free5gc-smf
+  ports:
+  - protocol: TCP
+    targetPort: 29502
+    port: 29502
+  clusterIP: None
+
+---
+apiVersion: v1
+data:
+  uerouting.yaml: |
+    info:
+      version: 1.0.0
+      description: Routing information for UE
+    
+    ueRoutingInfo:
+      - SUPI: imsi-2089300007487
+        AN: 10.200.200.101
+        PathList:
+          - DestinationIP: 60.60.0.101
+            UPF: !!seq
+              - BranchingUPF
+              - AnchorUPF1
+    
+          - DestinationIP: 60.60.0.103
+            UPF: !!seq
+              - BranchingUPF
+              - AnchorUPF2
+    
+      - SUPI: imsi-2089300007486
+        AN: 10.200.200.102
+        PathList:
+          - DestinationIP: 10.0.0.10
+            UPF: !!seq
+              - BranchingUPF
+              - AnchorUPF1
+    
+          - DestinationIP: 10.0.0.11
+            UPF: !!seq
+              - BranchingUPF
+              - AnchorUPF2
+    
+    routeProfile:
+      MEC1:
+        forwardingPolicyID: 10
+    
+    pfdDataForApp:
+      - applicationId: edge
+        pfds:
+          - pfdID: pfd1
+            flowDescriptions:
+              - permit out ip from 60.60.0.1 8080 to any
+    
+kind: ConfigMap
+metadata:
+  annotations:
+  name: uerouting

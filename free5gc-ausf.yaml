@@ -1,0 +1,61 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: free5gc-ausf-deployment
+spec:
+  selector:
+    matchLabels:
+      app: free5gc-ausf
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: free5gc-ausf
+      #annotations:
+         #diamanti.com/endpoint0: '{"endpointId":"ausf"}'
+
+    spec:
+      containers:      
+      - name: myapp-container
+        image: mjkota/free5gc-compose_free5gc-ausf
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 29509
+        command: ["/bin/sh"]
+        args: ["-c", "./ausf -ausfcfg ../config/ausfcfg.conf"]
+        env:
+          - name: GIN_MODE
+            value: "release"
+        volumeMounts:
+        - name: ausfcfg
+          mountPath: /free5gc/config/ausfcfg.conf
+          subPath: ausfcfg.conf
+        - name: free5gc
+          mountPath: /free5gc/config/free5GC.conf
+          subPath: free5GC.conf
+      volumes:
+      - name: ausfcfg
+        configMap:
+          name: free5gc-configmap
+          items: 
+          - key: ausfcfg.conf
+            path: ausfcfg.conf
+      - name: free5gc
+        configMap:
+          name: free5gc-configmap
+          items: 
+          - key: free5GC.conf
+            path: free5GC.conf
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: free5gc-ausf-service
+spec:
+  selector:
+    app: free5gc-ausf
+  ports:
+  - protocol: TCP
+    targetPort: 29509
+    port: 29509
+  clusterIP: None

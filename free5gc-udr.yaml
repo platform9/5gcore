@@ -1,0 +1,62 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: free5gc-udr-deployment
+spec:
+  selector:
+    matchLabels:
+      app: free5gc-udr
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: free5gc-udr
+      #annotations:
+         #diamanti.com/endpoint0: '{"endpointId":"udr"}'
+
+    spec:
+      containers:      
+      - name: myapp-container
+        image: mjkota/free5gc-compose_free5gc-udr
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: GIN_MODE
+            value: "release"
+        ports:
+        - containerPort: 29504
+        command: ["/bin/sh"]
+        args: ["-c", "./udr -udrcfg ../config/udrcfg.conf"]
+        volumeMounts:
+        - name: udrcfg
+          mountPath: /free5gc/config/udrcfg.conf
+          subPath: udrcfg.conf
+        - name: free5gc
+          mountPath: /free5gc/config/free5GC.conf
+          subPath: free5GC.conf
+      volumes:
+      - name: udrcfg
+        configMap:
+          name: free5gc-configmap
+          items: 
+          - key: udrcfg.conf
+            path: udrcfg.conf
+      - name: free5gc
+        configMap:
+          name: free5gc-configmap
+          items: 
+          - key: free5GC.conf
+            path: free5GC.conf
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: free5gc-udr-service
+spec:
+  selector:
+    app: free5gc-udr
+  ports:
+  - protocol: TCP
+    targetPort: 29504
+    port: 29504
+  clusterIP: None
+ 

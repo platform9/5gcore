@@ -1,0 +1,61 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: free5gc-nssf-deployment
+spec:
+  selector:
+    matchLabels:
+      app: free5gc-nssf
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: free5gc-nssf
+      #annotations:
+         #diamanti.com/endpoint0: '{"endpointId":"nssf"}'
+    spec:
+      containers:      
+      - name: myapp-container
+        image: mjkota/free5gc-compose_free5gc-nssf
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 29531
+        command: ["/bin/sh"]
+        args: ["-c", "./nssf -nssfcfg ../config/nssfcfg.conf"]
+        env:
+          - name: GIN_MODE
+            value: "release"
+        volumeMounts:
+        - name: nssfcfg
+          mountPath: /free5gc/config/nssfcfg.conf
+          subPath: nssfcfg.conf
+        - name: free5gc
+          mountPath: /free5gc/config/free5GC.conf
+          subPath: free5GC.conf
+      volumes:
+      - name: nssfcfg
+        configMap:
+          name: free5gc-configmap
+          items: 
+          - key: nssfcfg.conf
+            path: nssfcfg.conf
+      - name: free5gc
+        configMap:
+          name: free5gc-configmap
+          items: 
+          - key: free5GC.conf
+            path: free5GC.conf
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: free5gc-nssf-service
+spec:
+  selector:
+    app: free5gc-nssf
+  ports:
+  - protocol: TCP
+    targetPort: 29531
+    port: 29531
+  clusterIP: None   
+ 

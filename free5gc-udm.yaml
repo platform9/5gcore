@@ -1,0 +1,62 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: free5gc-udm-deployment
+spec:
+  selector:
+    matchLabels:
+      app: free5gc-udm
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: free5gc-udm
+      #annotations:
+         #diamanti.com/endpoint0: '{"endpointId":"udm"}'
+
+    spec:
+      containers:      
+      - name: myapp-container
+        image: mjkota/free5gc-compose_free5gc-udm
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: GIN_MODE
+            value: "release"
+        ports:
+        - containerPort: 29503
+        command: ["/bin/sh"]
+        args: ["-c", "./udm udmcfg ../config/udmcfg.conf"]
+        volumeMounts:
+        - name: udmcfg
+          mountPath: /free5gc/config/udmcfg.conf
+          subPath: udmcfg.conf
+        - name: free5gc
+          mountPath: /free5gc/config/free5GC.conf
+          subPath: free5GC.conf
+      volumes:
+      - name: udmcfg
+        configMap:
+          name: free5gc-configmap
+          items: 
+          - key: udmcfg.conf
+            path: udmcfg.conf
+      - name: free5gc
+        configMap:
+          name: free5gc-configmap
+          items: 
+          - key: free5GC.conf
+            path: free5GC.conf
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: free5gc-udm-service
+spec:
+  selector:
+    app: free5gc-udm
+  ports:
+  - protocol: TCP
+    targetPort: 29503
+    port: 29503
+  clusterIP: None
+ 

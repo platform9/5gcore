@@ -1,0 +1,48 @@
+apiVersion: v1
+data:
+  uerouting.yaml: |
+    info:
+      version: 1.0.0
+      description: Routing information for UE
+
+    ueRoutingInfo:
+      - SUPI: imsi-2089300000003
+        AN: upf1.free5gc.org
+        PathList:
+          - DestinationIP: 10.0.0.10
+            DestinationPort: 8888
+            UPF: !!seq
+              - BranchingUPF
+              - AnchorUPF1
+
+          - DestinationIP: 10.0.0.11
+            DestinationPort: 9999
+            UPF: !!seq
+              - BranchingUPF
+              - AnchorUPF2
+
+      - SUPI: imsi-2089300007486
+        AN: upf2.free5gc.org
+        PathList:
+          - DestinationIP: 10.0.0.10
+            DestinationPort: 8888
+            UPF: !!seq
+              - BranchingUPF
+              - AnchorUPF1
+
+          - DestinationIP: 10.0.0.11
+            DestinationPort: 9999
+            UPF: !!seq
+              - BranchingUPF
+              - AnchorUPF2
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"uerouting.yaml":"info:\n  version: 1.0.0\n  description: Routing information for UE\n\nueRoutingInfo:\n  - SUPI: imsi-2089300000003\n    AN: upf1.free5gc.org\n    PathList:\n      - DestinationIP: 10.0.0.10\n        DestinationPort: 8888\n        UPF: !!seq\n          - BranchingUPF\n          - AnchorUPF1\n\n      - DestinationIP: 10.0.0.11\n        DestinationPort: 9999\n        UPF: !!seq\n          - BranchingUPF\n          - AnchorUPF2\n\n  - SUPI: imsi-2089300007486\n    AN: upf2.free5gc.org\n    PathList:\n      - DestinationIP: 10.0.0.10\n        DestinationPort: 8888\n        UPF: !!seq\n          - BranchingUPF\n          - AnchorUPF1\n\n      - DestinationIP: 10.0.0.11\n        DestinationPort: 9999\n        UPF: !!seq\n          - BranchingUPF\n          - AnchorUPF2\n"},"kind":"ConfigMap","metadata":{"annotations":{},"name":"uerouting","namespace":"free5gc"}}
+  creationTimestamp: "2020-11-27T08:01:40Z"
+  name: uerouting
+  namespace: free5gc
+  resourceVersion: "53473297"
+  selfLink: /api/v1/namespaces/free5gc/configmaps/uerouting
+  uid: 5042da13-193a-497c-9f99-a8131a987efc
