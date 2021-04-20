@@ -16,23 +16,22 @@ Kubernetes Cluster backed by Calico CNI or any CNI having capability to provide 
 
 We will be installing 5G components as per 5G service based reference architecture 3gpp TS 23.501
 
-
 In this blog , UPF which is the data plane, will be installed on Virtual machine managed by Platform Manage Kubevirt solution and control plane components are installed on Platform Managed Kubernetes Cluster.
 
-###Clone the repo 
+Clone the repo 
 
 Users are required to first clone the repo 5gcore which has all the required Kubernetes manifest files.
 
-###Create the namespace
+Create the namespace
 Create a namespace called free5gc using following command
 kubectl create ns free5gc
 
-###Change the static IP for SMF and AMF
+Change the static IP for SMF and AMF
 This project requires static IP for SMF and AMF. This can be achieved via calico annotations.
 Adapt/Edit  the free5gc-amf.yaml and free5gc-smf.yaml as per the environment and static IP to be used.
 In  the free5gc-configmap.yaml change the amf and smf configuration to point to the same static IP used above.
 
-###Install the database first
+Install the database first
 The first component to install is the mongo database. Install the database using following command
 kubectl apply -f free5gc-mongodb.yaml -n free5gc
 
@@ -42,7 +41,7 @@ ubuntu@5g-core-01:~/pf9-free5gc/database$ kubectl get pods -n free5gc |grep mong
 free5gc-mongodb-0                          1/1     Running   0          2d23h
 ubuntu@5g-core-01:~/pf9-free5gc/database$ 
 
-###Create the configMap
+Create the configMap
 Each control plane has its configuration which is defined in free5gc-configmap.yaml.
 Create configuration using following command
 	kubectl apply -f free5gc-configmap.yaml -n free5gc
@@ -55,7 +54,7 @@ NAME                DATA   AGE
 free5gc-configmap   12     2d23h
 
 
-###Install the Network Registry Function (NRF)
+Install the Network Registry Function (NRF)
 The next component to install is NRF. Use the following command to install the NRF
 	kubectl apply -f free5gc-nrf.yaml -n free5gc
 
@@ -65,11 +64,11 @@ ubuntu@5g-core-01:~/pf9-free5gc$ kubectl get pods -n free5gc |grep nrf
 free5gc-nrf-deployment-6dd4bf6dd7-8wmzg    1/1     Running   0          2d23h
 ubuntu@5g-core-01:~/pf9-free5gc$
 
-###Install UPF in VM
+Install UPF in VM
 Once the Virtual Machine is created as described as a prerequisite section using Kubevirt on Platform9 install the UPF on that machine following upf-3.0.4. 
 Modify the upfcfg.yaml as per the Virtual Machine IP address. Sample upfcfg.yaml is part of cloned repo.
 
-###Install Rest of control Plane components
+Install Rest of control Plane components
 We can now install rest all the control plane components using there corresponding manifest file
 SMF
 AMF
@@ -97,6 +96,7 @@ For SMF and AMF you can see we have static IP assigned
 ubuntu@5g-core-01:~/pf9-free5gc$ kubectl get pods -n free5gc  -o wide|grep smf
 free5gc-smf-deployment-56b44b9f8-jfs5j     1/1     Running   0          2d23h   10.20.0.115   10.128.237.203   <none>           <none>
 free5gc-amf-deployment-68878d4889-7xgh6    1/1     Running   0          2d23h   10.20.0.110   10.128.237.202   <none>           <none>
+
 
 ## Testing
 
