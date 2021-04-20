@@ -3,6 +3,7 @@
 This repository allow anyone to deploy free5gc core on platform9.
 
 ## Pre requisite
+
 ```
 Kubernetes cluster created by Platform Management Plane.
 KubeVirt should be enabled and create Virtual Machine with Ubuntu 18 with Linux kernel version 5.0.0-23-generic.
@@ -11,6 +12,8 @@ SCTP support in Kubernetes Services.
 Kubernetes Cluster backed by Calico CNI or any CNI having capability to provide static IP to pods.
 ```
 
+Kubevirt https://platform9.com/blog/get-up-and-running-with-kubevirt-for-kubernetes-based-vm-management/
+Gtp5g https://github.com/PrinzOwO/gtp5g
 
 ## Installation
 We will be installing 5G components as per 3gpp TS 23.501 5g service based reference architecture
@@ -20,7 +23,7 @@ In this blog , UPF which is the data plane, will be installed on Virtual machine
 ```
 Clone the repo 
 
-Users are required to first clone the repo 5gcore which has all the required Kubernetes manifest files.
+Users are required to first clone the repo 5gcore(https://github.com/platform9/5gcore) which has all the required Kubernetes manifest files.
 
 Create the namespace
 Create a namespace called free5gc using following command
