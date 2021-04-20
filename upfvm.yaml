@@ -1,0 +1,54 @@
+---
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachine
+metadata:
+  name: ubuntu18-udm
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        guest: ubuntu18-udm
+        kubevirt.io/size: medium
+    spec:
+      domain:
+        cpu:
+         cores: 2
+        devices:
+          disks:
+            - name: ubuntu18-udm-datavolume
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+        machine:
+          type: ""
+        resources:
+          requests:
+            memory: 2Gi
+      terminationGracePeriodSeconds: 0
+      volumes:
+        - name: ubuntu18-udm-datavolume
+          persistentVolumeClaim:
+             claimName: ubuntu18-udm-datavolume
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userData: |-
+              #cloud-config
+              write_files:
+              -   encoding: b64
+                  content: bmV0d29yazoKICB2ZXJzaW9uOiAyCiAgZXRoZXJuZXRzOgogICAgaWQwOgogICAgICBkaGNwNDogdHJ1ZQogICAgICBtYXRjaDoKICAgICAgICBuYW1lOiBlbnAqCg==
+                  owner: root:root
+                  path: /etc/netplan/99-net-fix.yaml
+                  permissions: '0644'
+              users:
+                 - name: root
+                   ssh-authorized-keys:
+                     - $YOUR_KEY_HERE
+              ssh_pwauth: True
+              password: $YOUR_PASSWORD_HERE
+              chpasswd:
+                expire: False
+                list: |-
+                 root:$YOUR_PASSWORD_HERE
